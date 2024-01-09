@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="./Marcos_Porteiro_files/main.css">
+    <style>
+
+        * {
+        box-sizing: border-box;
+        }
+
+        body {
+        background: #ef9a5a;
+        color: #f1f1f1;
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 16px;
+        font-family: 'Panton', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        }
+
+        #passwordForm{
+            width: 100%;
+        }
+
+        input::placeholder{
+            color: #ffffff73;
+            font-size: medium;
+        }
+
+        input:focus{
+            outline: none;
+        }
+
+        .main-container{
+            margin-top:  40%;
+            width: 100%;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 25px;
+        }
+
+        input{
+            max-width: 500px;
+        }
+
+        input[type="password"]{
+            font-size: 20pt;
+            height: 60px;
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid rgb(255, 255, 255);
+            background-color: #2724241a;
+            color: #f1f1f1;
+            padding: 5px;
+            padding-left: 10px;
+            margin: 5px 0;
+        }
+
+        input[type="text"]{
+            font-size: 20pt;
+            height: 60px;
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid rgb(255, 255, 255);
+            background-color: #2724241a;
+            color: #f1f1f1;
+            padding: 5px;
+            padding-left: 10px;
+            margin: 5px 0;
+        }
+
+        input[type="number"]{
+            border-radius: 5px;
+            border: 1px solid rgb(255, 255, 255);
+            background-color: #2724241a;
+            color: #f1f1f1;
+            padding: 5px;
+            margin: 5px 0;
+        }
+
+        button{
+            opacity: 0.5;
+            padding-left: 10px;
+            border: none;
+            background: none;
+            color: #f1f1f1;
+            font-size: 25pt;
+            margin: 5px 0;
+        }
+
+        button:hover {
+            cursor: pointer;
+        }
+
+        .flex{
+            display: flex;
+        }
+
+        h1{
+            color: #f1f1f1;
+            font-size: 30pt;
+            margin-bottom: 20px;
+        }
+
+        .color-transition {
+            transition: background-color 1s ease-in-out;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <h1>Password Generator</h1>
+        <div></div>
+        <form id="passwordForm">
+            <div class="flex">
+                <input type="text" id="service" placeholder="Service Name" oninput="generatePassword()" required>
+            </div>
+            <div class="flex">
+                <input type="password" id="password" placeholder="Master password" oninput="generatePassword()" required>
+                <button type="button" onclick="toggleVisibility('password')"><i class="fas fa-eye"></i></button>
+            </div>
+            <div class="flex">
+                <input type="password" id="result" onclick="copyToClipboard()" placeholder="Generated password" readonly>
+                <button type="button" onclick="toggleVisibility('result')"><i class="fas fa-eye"></i></button>
+            </div>
+            <div>
+                <label for="length">Password Length:</label>
+                <input type="number" id="length" value="16" min="1" oninput="generatePassword()" required>
+            </div>
+        </form>
+    </div>
+    <script>
+
+        const randomSeed = {
+            create: function (seed) {
+                const m = 0x100000000;
+                const a = 1664525;
+                const c = 1013904223;
+                let state = seed;
+
+                return function () {
+                    state = (a * state + c) % m;
+                    return state / m;
+                };
+            }
+        };
+
+        function getPassword(password, service, length, alphabet) {
+            const CHARACTERS = alphabet || 'abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789!@#$%^&*()_+{}|[]:;<>,.?/~`';
+            let generatedPassword = "";
+
+            const hexadecimalSeed = CryptoJS.SHA512(password + CryptoJS.SHA512(service)).toString(CryptoJS.enc.Hex);
+            const seedNumber = parseInt(hexadecimalSeed.slice(0, 8), 16);
+            const random = randomSeed.create(seedNumber);
+
+            for (let i = 0; i < length; i++)
+                generatedPassword += CHARACTERS[Math.floor(random() * CHARACTERS.length)];
+
+            return generatedPassword;
+        }
+
+        function generatePassword() {
+            const passwordInput = document.getElementById('password').value;
+            const serviceInput = document.getElementById('service').value;
+            const lengthInput = parseInt(document.getElementById('length').value, 10);
+
+            const resultInput = document.getElementById('result');
+            resultInput.value = getPassword(passwordInput, serviceInput, lengthInput);
+            changeBackground();
+        }
+
+        function toggleVisibility(elementId) {
+            const element = document.getElementById(elementId);
+            const button = document.querySelector('#passwordForm button');
+
+            if (element.type === 'password') {
+                element.type = 'text';
+            } else {
+                element.type = 'password';
+            }
+        }
+
+        function copyToClipboard() {
+            const resultInput = document.getElementById('result');
+            const tempInput = document.createElement('input');
+            tempInput.value = resultInput.value;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+        }
+
+        function generateColorFromPassword(password, palette) {
+            const hash = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
+            const paletteIndex = parseInt(hash.substring(0, 6), 16) % palette.length;
+            const baseColor = palette[paletteIndex];
+            return baseColor;
+        }
+
+        function changeBackground() {
+            const resultInput = document.getElementById('result');
+            const body = document.body;
+            const generatedPassword = resultInput.value;
+            const colorPalette = ['#3498db', '#e74c3c', '#2ecc71', '#ef9a5a', '#9b59b6', '#1abc9c', '#FF8F8F', '#9ADE7B', '#512B81'];
+            const color = generateColorFromPassword(generatedPassword, colorPalette);
+            body.classList.add('color-transition');
+            body.style.background = color;
+        }
+
+
+    </script>
+</body>
+
+</html>
