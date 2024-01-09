@@ -91,12 +91,12 @@
         }
 
         button{
-            opacity: 0.5;
+            opacity: 1;
             padding-left: 10px;
             border: none;
             background: none;
-            color: #f1f1f1;
-            font-size: 25pt;
+            color: #ffffff;
+            font-size: 18pt;
             margin: 5px 0;
         }
 
@@ -162,11 +162,9 @@
         function getPassword(password, service, length, alphabet) {
             const CHARACTERS = alphabet || 'abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789!@#$%^&*()_+{}|[]:;<>,.?/~`';
             let generatedPassword = "";
-
             const hexadecimalSeed = CryptoJS.SHA512(password + CryptoJS.SHA512(service)).toString(CryptoJS.enc.Hex);
             const seedNumber = parseInt(hexadecimalSeed.slice(0, 8), 16);
             const random = randomSeed.create(seedNumber);
-
             for (let i = 0; i < length; i++)
                 generatedPassword += CHARACTERS[Math.floor(random() * CHARACTERS.length)];
 
@@ -185,12 +183,15 @@
 
         function toggleVisibility(elementId) {
             const element = document.getElementById(elementId);
-            const button = document.querySelector('#passwordForm button');
-
+            const button = document.querySelector(`#${elementId} + button i`);
             if (element.type === 'password') {
                 element.type = 'text';
+                button.classList.remove('fa-eye');
+                button.classList.add('fa-eye-slash');
             } else {
                 element.type = 'password';
+                button.classList.remove('fa-eye-slash');
+                button.classList.add('fa-eye');
             }
         }
 
